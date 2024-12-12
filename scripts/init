@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -ue
 
@@ -15,7 +15,7 @@ if [ -d "$CREDENTIALS_DIRECTORY" ]; then
     for cred in "$CREDENTIALS_DIRECTORY"/*; do
         git credential-cache store < "$cred"
     done
-fi 
+fi
 
 find . -iname 'jsonnetfile.json' | while read -r jsonnet; do
     pushd "$(dirname "$jsonnet")" >/dev/null

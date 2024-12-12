@@ -7,16 +7,16 @@ spec:
     version: v1.0
     generate:
         command:
-            - bash
+            - "bash"
             - "-c"
-            - "/script-wrapper /generate"
+            - "/plugin/script-wrapper generate"
 
     init:
         command:
-            - bash
+            - "bash"
             - "-c"
-            - "/script-wrapper /init"
+            - "/plugin/script-wrapper init"
 
     discover:
         find:
-            command: ["bash", "-c", "/script-wrapper /discover"]
+            command: ["bash", "-c", "/plugin/script-wrapper discover"]

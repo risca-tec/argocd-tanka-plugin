@@ -1,14 +1,33 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 set -ue
-
 set -o pipefail
 
-LOG_DIR=/tmp/argocd/$ARGOCD_APP_NAME/$ARGOCD_APP_REVISION
+: ${ARGOCD_APP_NAME:=undefined_app}
+: ${ARGOCD_APP_REVISION:=undefined_revision}
 
-SCRIPT=$1
+LOG_DIR="/tmp/argocd/${ARGOCD_APP_NAME}/${ARGOCD_APP_REVISION}"
+SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
-SCRIPT_NAME=$(basename "$SCRIPT")
+ACTION=""
+
+START_DATE="$(date '+%Y-%m-%d_%H:%M:%S.%N')"
+
+while [[ $# -gt 0 ]] ;
+do
+    opt="$1";
+    shift;              #expose next argument
+    case "$opt" in
+        "--" ) break 2;;
+        generate | init | discover ) ACTION="${SCRIPTPATH}/${opt}" ;;
+        *) echo >&2 "Invalid option: $@"; exit 1;;
+   esac
+done
+if [ -z "${ACTION}" ]; then
+    echo "ACTION was not defined"
+    exit 1
+fi
+
+SCRIPT_NAME=$(basename "${ACTION}")
 
 mkdir -p "$LOG_DIR"
 
@@ -22,7 +41,15 @@ export > "$ENVLOG"
 # This method is extremely easy to implement and read and should be more than enough for a CMP. However, it destroys the
 # order of stdout and stderr, so this needs to be fixed if the order is required (which it is not IIRC).
 
-"$SCRIPT" 1> "$STDOUT" 2> "$STDERR"  
+"${ACTION}" 1> "$STDOUT" 2> "$STDERR"
 
 cat "$STDOUT"
 cat "$STDERR" >&2
+END_DATE="$(date '+%Y-%m-%d_%H:%M:%S.%N')"
+echo "Execution start at: ${START_DATE}" >> ${ENVLOG}
+echo "Execution start at: ${START_DATE}" >> ${STDOUT}
+echo "Execution start at: ${START_DATE}" >> ${STDERR}
+echo "Execution end at: ${END_DATE}" >> ${ENVLOG}
+echo "Execution end at: ${END_DATE}" >> ${STDOUT}
+echo "Execution end at: ${END_DATE}" >> ${STDERR}
+
